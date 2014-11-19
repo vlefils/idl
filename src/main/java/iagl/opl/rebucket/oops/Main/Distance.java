@@ -3,7 +3,7 @@ package iagl.opl.rebucket.oops.Main;
 import iagl.opl.rebucket.oops.model.CallTrace;
 import iagl.opl.rebucket.oops.model.Oops;
 
-public class Distance {
+public class Distance{
 
 	public static final double C = 1;
 	public static final double O = 1;
