@@ -1,8 +1,8 @@
 package iagl.opl.rebucket.eclipse;
 
+import iagl.opl.rebucket.clustering.Distance;
+import iagl.opl.rebucket.clustering.Donnee;
 import iagl.opl.rebucket.eclipse.model.Trace;
-import iagl.opl.rebucket.oops.clustering.Distance;
-import iagl.opl.rebucket.oops.clustering.Donnee;
 
 public class DistanceTraceEclipse implements Distance{
 	public static final double C = 0;

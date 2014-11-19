@@ -1,9 +1,9 @@
 package iagl.opl.rebucket.eclipse;
 
+import iagl.opl.rebucket.clustering.Cluster;
+import iagl.opl.rebucket.clustering.Clustering;
+import iagl.opl.rebucket.clustering.Donnee;
 import iagl.opl.rebucket.eclipse.model.ReportBug;
-import iagl.opl.rebucket.oops.clustering.Cluster;
-import iagl.opl.rebucket.oops.clustering.Clustering;
-import iagl.opl.rebucket.oops.clustering.Donnee;
 
 import java.io.File;
 import java.io.FilenameFilter;

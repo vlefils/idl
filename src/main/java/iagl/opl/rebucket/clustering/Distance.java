@@ -1,4 +1,4 @@
-package iagl.opl.rebucket.oops.clustering;
+package iagl.opl.rebucket.clustering;
 
 /**
  * Distance entre deux données.

@@ -1,4 +1,4 @@
-package iagl.opl.rebucket.oops.clustering;
+package iagl.opl.rebucket.clustering;
 
 import java.util.ArrayList;
 import java.util.List;

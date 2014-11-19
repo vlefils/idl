@@ -1,4 +1,4 @@
-package iagl.opl.rebucket.oops.clustering ;
+package iagl.opl.rebucket.clustering ;
 
 /**
  *  Cluster, dans un algorithme de clustering de type K-mean. 

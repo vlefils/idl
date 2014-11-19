@@ -1,6 +1,6 @@
 package iagl.opl.rebucket.eclipse.model;
 
-import iagl.opl.rebucket.oops.clustering.Donnee;
+import iagl.opl.rebucket.clustering.Donnee;
 
 import java.util.List;
 
