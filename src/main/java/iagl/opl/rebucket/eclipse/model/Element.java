@@ -15,24 +15,11 @@ public class Element {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Element other = (Element) obj;
-		if (method == null) {
-			if (other.method != null)
-				return false;
-		} else if (!method.equals(other.method))
-			return false;
-		if (source == null) {
-			if (other.source != null)
-				return false;
-		} else if (!source.equals(other.source))
-			return false;
-		return true;
+		if (obj instanceof Element) {
+			Element other = (Element) obj;
+			return this.method.equals(other.method) && this.source.equals(other.source);
+		}
+		else return false;
 	}
 
 }

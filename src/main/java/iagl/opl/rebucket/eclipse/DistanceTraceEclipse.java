@@ -5,8 +5,8 @@ import iagl.opl.rebucket.clustering.Donnee;
 import iagl.opl.rebucket.eclipse.model.Trace;
 
 public class DistanceTraceEclipse implements Distance{
-	public static final double C = 0;
-	public static final double O = 0;
+	public static final double C = 0.5;
+	public static final double O = 1.5;
 
 	
 
@@ -32,7 +32,7 @@ public class DistanceTraceEclipse implements Distance{
 		}
 		
 		double sum = 0;
-		for (int i = 0; i < Math.min(trace1.elements.size(), trace2.elements.size()); i++) {
+		for (int i = 0; i <= Math.min(trace1.elements.size(), trace2.elements.size()); i++) {
 			sum += Math.exp((-1) * C * i);
 		}		
 		return (matrix[matrix.length - 1][matrix[0].length - 1]) / sum;

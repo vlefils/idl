@@ -24,7 +24,7 @@ public class Trace extends Bug implements Donnee{
 		
 	}
 	public String toComplexString() {
-		return "trace : "+message+"("+exceptionType+")";
+		return "trace "+bugId+" : "+message+"("+exceptionType+")";
 	}
 
 }
