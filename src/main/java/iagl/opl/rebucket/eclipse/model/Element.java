@@ -17,7 +17,7 @@ public class Element {
 	public boolean equals(Object obj) {
 		if (obj instanceof Element) {
 			Element other = (Element) obj;
-			return this.method.equals(other.method) && this.source.equals(other.source);
+			return this.method.equals(other.method);
 		}
 		else return false;
 	}

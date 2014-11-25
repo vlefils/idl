@@ -1,6 +1,7 @@
 package iagl.opl.rebucket.clustering;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,27 +13,21 @@ import java.util.List;
  * 
  * @author Anne-Cécile Caron
  */
-public class Clustering {
+public class ClusteringMemoire {
 
-	private List<Donnee> lesDonnees; // les données sur lesquelles on applique le
-								// clustering
+	private Donnee[] lesDonnees; // les données sur lesquelles on applique le
+									// clustering
 
-	private List<Cluster> lesClusters; // tableau de k Clusters
+	private List<Cluster> lesClusters;
 
-	private List<Donnee> lesCentres; // tableau des k centres des clusters
+	private List<Donnee> lesCentres; // les contenant les indices des centres
 
 	private Distance distance; // permet de choisir la façon de calculer la
 								// distance entre 2 données
 
+	double[][] distances;
+
 	double threshold;
-
-	private void init(List<Donnee> data, double threshold) {
-		this.threshold = threshold;
-
-		lesDonnees = data;
-
-		lesClusters = new ArrayList<Cluster>();
-	}
 
 	/**
 	 * Constructeur
@@ -45,17 +40,70 @@ public class Clustering {
 	 *            la distance utilisée, si on veut autre chose que la distance
 	 *            euclidienne non normalisée
 	 */
-	public Clustering(List<Donnee> data, double threshold, Distance d){
-		init(data, threshold);
+	public ClusteringMemoire(List<Donnee> data, double threshold, Distance d) {
+
+		this.threshold = threshold;
+
+		lesDonnees = new Donnee[data.size()];
+
+		int i = 0;
+		for (Donnee d1 : data) {
+			d1.setIndice(i);
+			lesDonnees[i] = d1;
+			i++;
+		}
+
+		distances = new double[data.size()][data.size()];
+
+		lesClusters = new ArrayList<Cluster>();
+
+		lesCentres = new ArrayList<Donnee>();
+
 		this.distance = d;
-		// on initialise les centres des clusters
-		this.lesCentres = null;
+
+		init();
+
+	}
+
+	private void init() {
+
+		for (int i = 0; i < lesDonnees.length; ++i) {
+			for (int j = 0; j < lesDonnees.length; ++j) {
+				if (j > i) {
+					distances[i][j] = distance.valeur(lesDonnees[i], lesDonnees[j]);
+				} else if (i == j) {
+					distances[i][j] = -1;
+				} else {
+					distances[i][j] = distances[j][i];
+				}
+			}
+		}
 	}
 
 	// on change les centres en créant une trace fictive représentant la fusion
 	// des traces du cluster
 	private void nouveauxCentres() {
-		// TODO
+		lesCentres.clear();
+		for (Cluster c : lesClusters) {
+			if (c.size() > 1) {
+				int min = -1; // minimum sum of distance with all other elements
+				Donnee dmin = c.get(0); // element which have the min sum
+				for (Donnee d1 : c) {
+					int dist = 0;
+					for (Donnee d2 : c) {
+						if (d1 != d2)
+							dist += distances[d1.getIndice()][d2.getIndice()];
+					}
+					if (min != -1 && dist < min) {
+						min = dist;
+						dmin = d1;
+					}
+				}
+				lesCentres.add(dmin);
+			} else {
+				lesCentres.add(c.get(0));
+			}
+		}
 	}
 
 	// une étape : on calcule la distance de chaque donnée par rapport aux
@@ -64,15 +112,16 @@ public class Clustering {
 	// proche
 	private boolean etapeCentres() {
 		boolean change = false;
-		double prox = 0; // proximité avec le centre le plus proche (0 =
-							// éloigné, 1
-							// = identique)
-		for (Donnee d : lesDonnees) {
-			for (Donnee d2 : lesCentres) {
-				double dist = distance.valeur(d, d2);
+		for (int i = 0; i < lesDonnees.length; ++i) {
+			double prox = 0; // proximité avec le centre le plus proche (0 =
+								// éloigné, 1 = identique)
+			int cluster = lesDonnees[i].numCluster();// cluster actuel
+			for (Donnee centre : lesCentres) {
+				double dist = distances[i][centre.getIndice()];// distance.valeur(lesDonnees[i],centre);
 				if (dist > threshold && dist > prox) {
 					prox = dist;
-					d.setCluster(d2.numCluster());
+					lesDonnees[i].setCluster(lesDonnees[centre.getIndice()].numCluster());
+					if (centre.numCluster()!=cluster)change = true;
 				}
 			}
 		}
@@ -84,45 +133,47 @@ public class Clustering {
 	// centres des clusters
 	// et on place chaque donnée dans le cluster dont le centre est le plus
 	// proche
-	private void etapeVoisins(){
-		double prox = 0; // proximité avec la donnée la plus proche (0 = éloigné, 1
-						// = identique)
-		
-		for (Donnee d : lesDonnees) {
-			Donnee voisin=null;
-			prox=0;
-			if(d.numCluster()>-1){
+	private void etapeVoisins() {
+		double prox = 0; // proximité avec la donnée la plus proche (0 =
+							// éloigné, 1
+							// = identique)
+
+		for (int i = 0; i < lesDonnees.length; ++i) {
+			Donnee d1 = lesDonnees[i];
+			Donnee voisin = null;
+			prox = 0;
+			if (d1.numCluster() > -1) {
 				continue;
 			}
-			for (Donnee d2 : lesDonnees) {
-				if(d!=d2){
-					double dist = distance.valeur(d,d2);
-					if (dist < 0 || dist > 1) System.err.println(dist);
+			for (int j = 0; j < lesDonnees.length; ++j) {
+				Donnee d2 = lesDonnees[j];
+				if (i != j) {
+					double dist = distances[i][j];
+					if (dist < 0 || dist > 1)
+						System.err.println(dist);
 					if (dist > threshold && dist > prox) {
 						prox = dist;
-						voisin=d2;
+						voisin = d2;
 					}
 				}
 			}
-			if(voisin!=null && voisin.numCluster()==-1){
+			if (voisin != null && voisin.numCluster() == -1) {
 				Cluster c = new Cluster();
 				lesClusters.add(c);
-				d.setCluster(lesClusters.indexOf(c));
+				d1.setCluster(lesClusters.indexOf(c));
 				voisin.setCluster(lesClusters.indexOf(c));
-				
-				c.add(d);
+
+				c.add(d1);
 				c.add(voisin);
-			}
-			else if(voisin!=null){
-				d.setCluster(voisin.numCluster());
-				lesClusters.get(d.numCluster()).add(d);
-			}
-			else{
+			} else if (voisin != null) {
+				d1.setCluster(voisin.numCluster());
+				lesClusters.get(d1.numCluster()).add(d1);
+			} else {
 				Cluster c = new Cluster();
 				lesClusters.add(c);
-				d.setCluster(lesClusters.indexOf(c));
-				
-				c.add(d);
+				d1.setCluster(lesClusters.indexOf(c));
+
+				c.add(d1);
 			}
 		}
 	}
@@ -162,16 +213,22 @@ public class Clustering {
 	 *         l'algorithme.
 	 * @throws ClusterException
 	 */
-	public List<Cluster> algoCentres(boolean trace) {
+	public List<Cluster> algoCentres(boolean trace,int limit) {
 		boolean change = true;
 		if (trace) {
 			System.out.println("données avant le clustering : ");
 			this.affichage();
 			System.out.println("Application du clustering : ");
 		}
-		while (change) {
+
+		// initialisation
+		etapeVoisins();
+		nouveauxCentres();
+
+		while (change && limit-->0) {
 			change = etapeCentres();
 			if (change) {
+				System.out.println("nouveaux centres");
 				nouveauxCentres();
 			}
 		}
@@ -189,7 +246,6 @@ public class Clustering {
 		System.out.println("--------------------");
 	}
 
-	
 	public List<Cluster> getLesClusters() {
 		return lesClusters;
 	}

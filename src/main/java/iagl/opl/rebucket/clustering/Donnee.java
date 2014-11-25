@@ -6,6 +6,11 @@ public interface Donnee {
 	public int numCluster();
 
 	public void setCluster(int numCluster);
+	
+	public int getIndice();// retourne la position dans le dataset
+
+	public void setIndice(int indice);
+
 
 	public String toComplexString();
 

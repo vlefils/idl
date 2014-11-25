@@ -9,11 +9,13 @@ public class Trace extends Bug implements Donnee{
 	public String message;
 	public List<Element> elements;
 	
-	int cluster=-1;
-	
-	// public Integer number;
+	int cluster=-1; // numero du cluster
+	int indice = -1;
+	int groupId;
+	public Integer bugId;	
+
 	// public Integer commentIndex;
-	// public Trace causedBy;
+	public Trace causedBy;
 	
 	
 	public int numCluster() {
@@ -26,5 +28,26 @@ public class Trace extends Bug implements Donnee{
 	public String toComplexString() {
 		return "trace "+bugId+" : "+message+"("+exceptionType+")";
 	}
+
+	public int getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
+	}
+	@Override
+	public int getIndice() {
+		return indice;
+	}
+	@Override
+	public void setIndice(int indice) {
+		this.indice=indice;
+		
+	}
+	
+	public Integer getBugId() {
+		return bugId;
+	}
+
 
 }
