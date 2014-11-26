@@ -115,13 +115,19 @@ public class ClusteringSimple {
 		for (int i = 0; i < lesDonnees.length; ++i) {
 			double prox = 0; // proximité avec le centre le plus proche (0 =
 								// éloigné, 1 = identique)
-			int cluster = lesDonnees[i].numCluster();// cluster actuel
+			int oldcluster = lesDonnees[i].numCluster();// cluster actuel
 			for (Donnee centre : lesCentres) {
 				double dist = distance.valeur(lesDonnees[i],centre);// distance.valeur(lesDonnees[i],centre);
 				if (dist > threshold && dist > prox) {
 					prox = dist;
-					lesDonnees[i].setCluster(lesDonnees[centre.getIndice()].numCluster());
-					if (centre.numCluster()!=cluster)change = true;
+					if (centre.numCluster()!=oldcluster){
+						int newcluster = centre.numCluster();
+						lesClusters.get(oldcluster).remove(lesDonnees[i]);
+						lesDonnees[i].setCluster(newcluster);
+						lesClusters.get(newcluster).add(lesDonnees[i]);
+						
+						change = true;
+					}
 				}
 			}
 		}
@@ -228,7 +234,6 @@ public class ClusteringSimple {
 		while (change && limit-->0) {
 			change = etapeCentres();
 			if (change) {
-				System.out.println("nouveaux centres");
 				nouveauxCentres();
 			}
 		}

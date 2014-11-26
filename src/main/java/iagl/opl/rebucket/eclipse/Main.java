@@ -20,15 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Main {
 
 	public static boolean VERBOSE = false;
+	public static int nbFiles = -1;
 
 	public static void main(String[] args) throws JSONException, IOException,
 			IllegalAccessException {
 
-		
-		System.out.println("-----------------------\ndébut de l'init\n");
+		System.out.println("-----------------------\ndebut de l'init\n");
 		long timeInit = System.currentTimeMillis();
 
-		
 		URL urlDirJson = Main.class.getClassLoader().getResource("jsonfiles");
 
 		File[] jsons = new File(urlDirJson.getFile())
@@ -42,16 +41,15 @@ public class Main {
 		List<Donnee> traces = new LinkedList<Donnee>();
 
 		ObjectMapper mapper = new ObjectMapper();
-		int max = -1;
 		for (File f : jsons) {
-			if (max-- == 0)
+			if (nbFiles-- == 0)
 				break;
 			ReportBug report = mapper.readValue(f, ReportBug.class);
 			Trace t = report.traces.get(report.traces.size() - 1);
 			int id = t.getGroupId();
 			int idB = t.bugId;
-			while(t.causedBy!=null){
-				t=t.causedBy;
+			while (t.causedBy != null) {
+				t = t.causedBy;
 			}
 			t.setGroupId(id);
 			t.bugId = idB;
@@ -60,32 +58,31 @@ public class Main {
 			if (report.traces.isEmpty())
 				System.err.println(report.bugId);
 		}
-		System.out.println("traces ajoutées : " + traces.size());
+		System.out.println("traces ajoutees : " + traces.size());
 
 		ClusteringSimple clustering = new ClusteringSimple(traces, 0.95,
 				new DistanceTraceEclipse());
-		
-		long timeEnd = System.currentTimeMillis();
-		System.out.println("\nfin de l'init (durée : " + (timeEnd - timeInit)
-				+ ")\n-----------------------");
-		
 
-		System.out.println("-----------------------\ndébut de l'algo\n");
+		long timeEnd = System.currentTimeMillis();
+		System.out.println("\nfin de l'init (duree : " + (timeEnd - timeInit)
+				+ ")\n-----------------------");
+
+		System.out.println("-----------------------\ndebut de l'algo\n");
 		timeInit = System.currentTimeMillis();
-		//clustering.algoCentres(false,100);
+		// clustering.algoCentres(false,100);
 		clustering.algoVoisins(false);
 		timeEnd = System.currentTimeMillis();
 
-		System.out.println("\nfin de l'algo (durée : " + (timeEnd - timeInit)
-				+ ")\n-----------------------");		
-		
+		System.out.println("\nfin de l'algo (duree : " + (timeEnd - timeInit)
+				+ ")\n-----------------------");
+
 		// Affichage des buckets
 		int cptNonUniq = 0;
 		int cpt = 0;
+		int validNonUniq =0;
 		float oks = 0, kos = 0;
-		float kouniqs = 0, okuniqs=0;
+		float kouniqs = 0, okuniqs = 0;
 
-		
 		for (Cluster c : clustering.getLesClusters()) {
 			if (c.size() > 1) {
 				boolean ok = true;
@@ -104,10 +101,10 @@ public class Main {
 						}
 					}
 				}
-
+				if (ok)
+					validNonUniq++;
 				cptNonUniq++;
-				System.out.println("bucket n°" + cpt + "("
-						+ (ok ? "OK" : "KO") + ")");
+				System.out.println("bucket n�" + cpt + (ok ? "(VALIDE)" : "(NON VALIDE)"));
 				cpt++;
 
 				if (VERBOSE) {
@@ -116,13 +113,11 @@ public class Main {
 					}
 				}
 
-			}
-			else{
-				Trace t = (Trace)c.get(0);
-				if(t.getGroupId()==t.getBugId()){
+			} else {
+				Trace t = (Trace) c.get(0);
+				if (t.getGroupId() == t.getBugId()) {
 					okuniqs++;
-				}
-				else{
+				} else {
 					kouniqs++;
 				}
 			}
@@ -130,16 +125,32 @@ public class Main {
 		
 		System.out.println("-----------------------");
 
-		
 		System.out.println("nb clusters uniques: "
 				+ (clustering.getLesClusters().size() - cptNonUniq));
-		System.out.println("nb clusters non uniques : " + cptNonUniq);
-		System.out.println("buckets de plus d'un élément :");
-		System.out.println("ok : "+oks+" / ko : "+kos+" / précision : " + (oks / (oks + kos) * 100) + "%");
-		System.out.println("buckets uniques :");
-		System.out.println("ok : "+okuniqs+" / ko : "+kouniqs+" / précision : " + (okuniqs / (okuniqs + kouniqs) * 100) + "%");
+		System.out.println("ok : " + okuniqs + " / ko : " + kouniqs
+				+ " / precision : " + (okuniqs / (okuniqs + kouniqs) * 100)
+				+ "%\n");
+		System.out.println("nb clusters non uniques : " + cptNonUniq+" (100% valides : "+validNonUniq+")");		
+		System.out.println("ok : " + oks + " / ko : " + kos + " / precision : "
+				+ (oks / (oks + kos) * 100) + "%\n");
+
+
 
 
 	}
 
 }
+
+/*
+ * 
+ * ALGO VOISINS : 5000 elements ----------------------------- fin de l'init
+ * (duree : 227025) fin de l'algo (duree : 500) nb clusters uniques: 3377 nb
+ * clusters non uniques : 641 buckets de plus d'un element : ok : 808.0 / ko :
+ * 2450.0 / precision : 24.800491% buckets uniques : ok : 3005.0 / ko : 372.0 /
+ * precision : 88.98431%
+ * 
+ * 
+ * 
+ * 
+ * ALGO CENTRES : 5000 elements ------------------------------
+ */

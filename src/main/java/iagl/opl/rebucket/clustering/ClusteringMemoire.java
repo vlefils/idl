@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * L'algorithme de clustering, méthode des k-means. On applique l'algorithme sur
- * des données placées initialement dans 1 cluster, et que l'on va répartir dans
- * k clusters. Il est possible de partir de k centres donnés, ou bien on va les
- * choisir aléatoirement. Il est aussi possible de choisir la distance, par
- * défaut c'est la distance euclidienne sans normalisation.
+ * L'algorithme de clustering, méthode des k-means. On applique l'algorithme
+ * sur des données placées initialement dans 1 cluster, et que l'on va
+ * répartir dans k clusters. Il est possible de partir de k centres donnés, ou
+ * bien on va les choisir aléatoirement. Il est aussi possible de choisir la
+ * distance, par défaut c'est la distance euclidienne sans normalisation.
  * 
  * @author Anne-Cécile Caron
  */
@@ -70,7 +70,8 @@ public class ClusteringMemoire {
 		for (int i = 0; i < lesDonnees.length; ++i) {
 			for (int j = 0; j < lesDonnees.length; ++j) {
 				if (j > i) {
-					distances[i][j] = distance.valeur(lesDonnees[i], lesDonnees[j]);
+					distances[i][j] = distance.valeur(lesDonnees[i],
+							lesDonnees[j]);
 				} else if (i == j) {
 					distances[i][j] = -1;
 				} else {
@@ -80,7 +81,8 @@ public class ClusteringMemoire {
 		}
 	}
 
-	// on change les centres en créant une trace fictive représentant la fusion
+	// on change les centres en créant une trace fictive représentant la
+	// fusion
 	// des traces du cluster
 	private void nouveauxCentres() {
 		lesCentres.clear();
@@ -115,13 +117,25 @@ public class ClusteringMemoire {
 		for (int i = 0; i < lesDonnees.length; ++i) {
 			double prox = 0; // proximité avec le centre le plus proche (0 =
 								// éloigné, 1 = identique)
-			int cluster = lesDonnees[i].numCluster();// cluster actuel
+			int oldcluster = lesDonnees[i].numCluster();// cluster actuel
 			for (Donnee centre : lesCentres) {
-				double dist = distances[i][centre.getIndice()];// distance.valeur(lesDonnees[i],centre);
+				if (centre.numCluster() == oldcluster)
+					prox = distances[i][centre.getIndice()];
+			}
+			for (Donnee centre : lesCentres) {
+				int j = centre.getIndice();
+				double dist = distances[i][j];
 				if (dist > threshold && dist > prox) {
 					prox = dist;
-					lesDonnees[i].setCluster(lesDonnees[centre.getIndice()].numCluster());
-					if (centre.numCluster()!=cluster)change = true;
+					int newcluster = centre.numCluster();
+					lesClusters.get(oldcluster).remove(lesDonnees[i]);
+					if (lesClusters.get(oldcluster).size() == 0) {
+						lesClusters.remove(oldcluster);
+					}
+					lesDonnees[i].setCluster(newcluster);
+					lesClusters.get(newcluster).add(lesDonnees[i]);
+
+					change = true;
 				}
 			}
 		}
@@ -184,8 +198,8 @@ public class ClusteringMemoire {
 	 * 
 	 * @param trace
 	 *            boolean qui permet de demander (ou pas) d'avoir une trace des
-	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de données
-	 *            !
+	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de
+	 *            données !
 	 * @return le tableau des k Clusters résultat de l'application de
 	 *         l'algorithme.
 	 * @throws ClusterException
@@ -207,13 +221,13 @@ public class ClusteringMemoire {
 	 * 
 	 * @param trace
 	 *            boolean qui permet de demander (ou pas) d'avoir une trace des
-	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de données
-	 *            !
+	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de
+	 *            données !
 	 * @return le tableau des k Clusters résultat de l'application de
 	 *         l'algorithme.
 	 * @throws ClusterException
 	 */
-	public List<Cluster> algoCentres(boolean trace,int limit) {
+	public List<Cluster> algoCentres(boolean trace, int limit) {
 		boolean change = true;
 		if (trace) {
 			System.out.println("données avant le clustering : ");
@@ -225,17 +239,17 @@ public class ClusteringMemoire {
 		etapeVoisins();
 		nouveauxCentres();
 
-		while (change && limit-->0) {
+		while (change && limit-- > 0) {
 			change = etapeCentres();
 			if (change) {
-				System.out.println("nouveaux centres");
 				nouveauxCentres();
 			}
 		}
 		return lesClusters;
 	}
 
-	// affiche toutes les données avec leur numéro de cluster et la distance par
+	// affiche toutes les données avec leur numéro de cluster et la distance
+	// par
 	// rapport au centre
 	// donne aussi un résumé des mesures de qualité : WC et BC
 	private void affichage() {

@@ -4,7 +4,7 @@ import iagl.opl.rebucket.clustering.Donnee;
 
 import java.util.List;
 
-public class Trace extends Bug implements Donnee{
+public class Trace extends Bug implements Donnee,Comparable<Trace>{
 	public String exceptionType;
 	public String message;
 	public List<Element> elements;
@@ -47,6 +47,13 @@ public class Trace extends Bug implements Donnee{
 	
 	public Integer getBugId() {
 		return bugId;
+	}
+	
+	
+	@Override
+	public int compareTo(Trace arg0) {
+		if(this!=arg0)return 0;
+		else return 1;
 	}
 
 
