@@ -4,6 +4,8 @@ import iagl.opl.rebucket.clustering.Distance;
 import iagl.opl.rebucket.clustering.Donnee;
 import iagl.opl.rebucket.eclipse.model.Trace;
 
+import org.apache.commons.math3.util.FastMath;
+
 public class DistanceTraceEclipse implements Distance {
 	public static final double C = 0.5;
 	public static final double O = 5;
@@ -31,9 +33,9 @@ public class DistanceTraceEclipse implements Distance {
 		}
 
 		double sum = 0;
-		for (int i = 0; i <= Math.min(trace1.elements.size(),
+		for (int i = 0; i <= FastMath.min(trace1.elements.size(),
 				trace2.elements.size()); i++) {
-			sum += Math.exp((-1) * C * i);
+			sum += FastMath.exp((-1) * C * i);
 		}
 		return (matrix[matrix.length - 1][matrix[0].length - 1]) / sum;
 	}
@@ -41,8 +43,8 @@ public class DistanceTraceEclipse implements Distance {
 	// 35% temps calcul de la boucle init
 	private Double cost(Trace trace1, Trace trace2, int i, int j) {
 		if (trace1.elements.get(i).equals(trace2.elements.get(j))) {
-			double coef = C * Math.min(i, j) + O * Math.abs(i - j);
-			return Math.exp((-1) * coef);
+			double coef = C * FastMath.min(i, j) + O * FastMath.abs(i - j);
+			return FastMath.exp((-1) * coef);
 		} else {
 			return 0.0;
 		}
@@ -50,7 +52,7 @@ public class DistanceTraceEclipse implements Distance {
 
 	// 8% temps calcul de la boucle init
 	public double max(double a, double b, double c) {
-		return Math.max(Math.max(a, b), c);
+		return FastMath.max(FastMath.max(a, b), c);
 	}
 
 }

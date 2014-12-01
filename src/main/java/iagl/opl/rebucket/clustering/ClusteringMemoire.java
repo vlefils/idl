@@ -1,44 +1,32 @@
 package iagl.opl.rebucket.clustering;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+
 /**
- * L'algorithme de clustering, méthode des k-means. On applique l'algorithme
- * sur des données placées initialement dans 1 cluster, et que l'on va
- * répartir dans k clusters. Il est possible de partir de k centres donnés, ou
- * bien on va les choisir aléatoirement. Il est aussi possible de choisir la
- * distance, par défaut c'est la distance euclidienne sans normalisation.
- * 
- * @author Anne-Cécile Caron
+ *
+ * Utilitaire de clustering avec precalcul des distances (+ rapide mais + gourmand en memoire)
+ *
  */
 public class ClusteringMemoire {
 
-	private Donnee[] lesDonnees; // les données sur lesquelles on applique le
-									// clustering
-
+	private Donnee[] lesDonnees;
 	private List<Cluster> lesClusters;
-
-	private List<Donnee> lesCentres; // les contenant les indices des centres
-
-	private Distance distance; // permet de choisir la façon de calculer la
-								// distance entre 2 données
-
+	private List<Donnee> lesCentres;
+	private Distance distance;
 	double[][] distances;
-
 	double threshold;
 
 	/**
 	 * Constructeur
 	 * 
 	 * @param data
-	 *            toutes les données que l'on va répartir dans k clusters
-	 * @param centres
-	 *            liste des centres des clusters
+	 *            toutes les donnees que l'on va repartir dans k clusters
+	 * @param threshold
+	 *            Seuil minimum pour la distance necessaire pour rapprocher deux traces
 	 * @param d
-	 *            la distance utilisée, si on veut autre chose que la distance
-	 *            euclidienne non normalisée
+	 *            la distance utilisee
 	 */
 	public ClusteringMemoire(List<Donnee> data, double threshold, Distance d) {
 
@@ -54,11 +42,8 @@ public class ClusteringMemoire {
 		}
 
 		distances = new double[data.size()][data.size()];
-
 		lesClusters = new ArrayList<Cluster>();
-
 		lesCentres = new ArrayList<Donnee>();
-
 		this.distance = d;
 
 		init();
@@ -81,7 +66,7 @@ public class ClusteringMemoire {
 		}
 	}
 
-	// on change les centres en créant une trace fictive représentant la
+	// on change les centres en creant une trace fictive representant la
 	// fusion
 	// des traces du cluster
 	private void nouveauxCentres() {
@@ -108,15 +93,15 @@ public class ClusteringMemoire {
 		}
 	}
 
-	// une étape : on calcule la distance de chaque donnée par rapport aux
+	// une etape : on calcule la distance de chaque donnee par rapport aux
 	// centres des clusters
-	// et on place chaque donnée dans le cluster dont le centre est le plus
+	// et on place chaque donnee dans le cluster dont le centre est le plus
 	// proche
 	private boolean etapeCentres() {
 		boolean change = false;
 		for (int i = 0; i < lesDonnees.length; ++i) {
-			double prox = 0; // proximité avec le centre le plus proche (0 =
-								// éloigné, 1 = identique)
+			double prox = 0; // proximite avec le centre le plus proche (0 =
+								// eloigne, 1 = identique)
 			int oldcluster = lesDonnees[i].numCluster();// cluster actuel
 			for (Donnee centre : lesCentres) {
 				if (centre.numCluster() == oldcluster)
@@ -143,13 +128,13 @@ public class ClusteringMemoire {
 						// cluster
 	}
 
-	// une étape : on calcule la distance de chaque donnée par rapport aux
+	// une etape : on calcule la distance de chaque donnee par rapport aux
 	// centres des clusters
-	// et on place chaque donnée dans le cluster dont le centre est le plus
+	// et on place chaque donnee dans le cluster dont le centre est le plus
 	// proche
 	private void etapeVoisins() {
-		double prox = 0; // proximité avec la donnée la plus proche (0 =
-							// éloigné, 1
+		double prox = 0; // proximite avec la donnee la plus proche (0 =
+							// eloigne, 1
 							// = identique)
 
 		for (int i = 0; i < lesDonnees.length; ++i) {
@@ -193,20 +178,19 @@ public class ClusteringMemoire {
 	}
 
 	/**
-	 * l'algorithme de clustering sur les données que l'on a passées au
+	 * l'algorithme de clustering sur les donnees que l'on a passees au
 	 * constructeur. On applique l'algo des k-means
 	 * 
 	 * @param trace
 	 *            boolean qui permet de demander (ou pas) d'avoir une trace des
-	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de
-	 *            données !
-	 * @return le tableau des k Clusters résultat de l'application de
+	 *            etapes de l'algorithme. A eviter s'il y a beaucoup de
+	 *            donnees !
+	 * @return le tableau des Clusters resultat de l'application de
 	 *         l'algorithme.
-	 * @throws ClusterException
 	 */
 	public List<Cluster> algoVoisins(boolean trace) {
 		if (trace) {
-			System.out.println("données avant le clustering : ");
+			System.out.println("donnees avant le clustering : ");
 			this.affichage();
 			System.out.println("Application du clustering : ");
 		}
@@ -216,21 +200,23 @@ public class ClusteringMemoire {
 	}
 
 	/**
-	 * l'algorithme de clustering sur les données que l'on a passées au
+	 * l'algorithme de clustering sur les donnees que l'on a passees au
 	 * constructeur. On applique l'algo des k-means
 	 * 
 	 * @param trace
 	 *            boolean qui permet de demander (ou pas) d'avoir une trace des
-	 *            étapes de l'algorithme. A eviter s'il y a beaucoup de
-	 *            données !
-	 * @return le tableau des k Clusters résultat de l'application de
+	 *            etapes de l'algorithme. A eviter s'il y a beaucoup de
+	 *            donnees !
+	 * @param limit
+	 * 			  nombre d'it�ration maximum si les clusters ne se stabilisent pas
+	 * @return le tableau des k Clusters resultat de l'application de
 	 *         l'algorithme.
 	 * @throws ClusterException
 	 */
 	public List<Cluster> algoCentres(boolean trace, int limit) {
 		boolean change = true;
 		if (trace) {
-			System.out.println("données avant le clustering : ");
+			System.out.println("donnees avant le clustering : ");
 			this.affichage();
 			System.out.println("Application du clustering : ");
 		}
@@ -248,10 +234,10 @@ public class ClusteringMemoire {
 		return lesClusters;
 	}
 
-	// affiche toutes les données avec leur numéro de cluster et la distance
+	// affiche toutes les donnees avec leur numero de cluster et la distance
 	// par
 	// rapport au centre
-	// donne aussi un résumé des mesures de qualité : WC et BC
+	// donne aussi un resume des mesures de qualite : WC et BC
 	private void affichage() {
 		System.out.println("--------------------");
 		for (Donnee d : this.lesDonnees) {
@@ -260,12 +246,5 @@ public class ClusteringMemoire {
 		System.out.println("--------------------");
 	}
 
-	public List<Cluster> getLesClusters() {
-		return lesClusters;
-	}
-
-	public void setLesClusters(List<Cluster> lesClusters) {
-		this.lesClusters = lesClusters;
-	}
 
 }

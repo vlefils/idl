@@ -1,7 +1,7 @@
 package iagl.opl.rebucket.eclipse;
 
 import iagl.opl.rebucket.clustering.Cluster;
-import iagl.opl.rebucket.clustering.ClusteringSimple;
+import iagl.opl.rebucket.clustering.ClusteringMemoire;
 import iagl.opl.rebucket.clustering.Donnee;
 import iagl.opl.rebucket.eclipse.model.ReportBug;
 import iagl.opl.rebucket.eclipse.model.Trace;
@@ -20,16 +20,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Main {
 
 	public static boolean VERBOSE = false;
-	public static int nbFiles = -1;
+	public static int nbFiles = 5000; // nombre de fichiers a traiter 
 
 	public static void main(String[] args) throws JSONException, IOException,
 			IllegalAccessException {
 
 		System.out.println("-----------------------\ndebut de l'init\n");
 		long timeInit = System.currentTimeMillis();
+		
 
 		URL urlDirJson = Main.class.getClassLoader().getResource("jsonfiles");
-
 		File[] jsons = new File(urlDirJson.getFile())
 				.listFiles(new FilenameFilter() {
 
@@ -37,10 +37,10 @@ public class Main {
 						return name.endsWith(".json");
 					}
 				});
-
 		List<Donnee> traces = new LinkedList<Donnee>();
-
 		ObjectMapper mapper = new ObjectMapper();
+		
+		
 		for (File f : jsons) {
 			if (nbFiles-- == 0)
 				break;
@@ -60,17 +60,20 @@ public class Main {
 		}
 		System.out.println("traces ajoutees : " + traces.size());
 
-		ClusteringSimple clustering = new ClusteringSimple(traces, 0.95,
+		ClusteringMemoire clustering = new ClusteringMemoire(traces, 0.95,
 				new DistanceTraceEclipse());
 
+		
 		long timeEnd = System.currentTimeMillis();
 		System.out.println("\nfin de l'init (duree : " + (timeEnd - timeInit)
 				+ ")\n-----------------------");
 
+		
+		List<Cluster> clusters;
+		
 		System.out.println("-----------------------\ndebut de l'algo\n");
 		timeInit = System.currentTimeMillis();
-		// clustering.algoCentres(false,100);
-		clustering.algoVoisins(false);
+		clusters = clustering.algoVoisins(false);
 		timeEnd = System.currentTimeMillis();
 
 		System.out.println("\nfin de l'algo (duree : " + (timeEnd - timeInit)
@@ -83,7 +86,7 @@ public class Main {
 		float oks = 0, kos = 0;
 		float kouniqs = 0, okuniqs = 0;
 
-		for (Cluster c : clustering.getLesClusters()) {
+		for (Cluster c : clusters) {
 			if (c.size() > 1) {
 				boolean ok = true;
 				// verify cluster
@@ -126,7 +129,7 @@ public class Main {
 		System.out.println("-----------------------");
 
 		System.out.println("nb clusters uniques: "
-				+ (clustering.getLesClusters().size() - cptNonUniq));
+				+ (clusters.size() - cptNonUniq));
 		System.out.println("ok : " + okuniqs + " / ko : " + kouniqs
 				+ " / precision : " + (okuniqs / (okuniqs + kouniqs) * 100)
 				+ "%\n");
@@ -148,9 +151,4 @@ public class Main {
  * clusters non uniques : 641 buckets de plus d'un element : ok : 808.0 / ko :
  * 2450.0 / precision : 24.800491% buckets uniques : ok : 3005.0 / ko : 372.0 /
  * precision : 88.98431%
- * 
- * 
- * 
- * 
- * ALGO CENTRES : 5000 elements ------------------------------
  */
